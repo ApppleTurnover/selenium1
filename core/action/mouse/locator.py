@@ -14,7 +14,7 @@ from core.scripts.jinja_javascript import Scripts
 
 class ElementMouseLocator:
     def __init__(self, element: WebElement, blocked_elements: list[WebElement] = None):
-        self.element = element  # TODO REMOVE
+        self.element = element
 
         window_size = element.parent.execute_script(Scripts.get_window_size)
         self._window_height = window_size['height']
@@ -43,7 +43,7 @@ class ElementMouseLocator:
             "max_x": max_x,
         }
 
-    def get_safe_dots(self, min_x: int, min_y: int, max_x: int, max_y: int) -> tuple[tuple]:  # TODO PAGE
+    def get_safe_dots(self, min_x: int, min_y: int, max_x: int, max_y: int) -> tuple[tuple]:
         min_x = max(0, min_x) + 1
         max_x = min(self._window_width, max_x) - 1
         min_y = max(0, min_y) + 1
@@ -58,7 +58,7 @@ class ElementMouseLocator:
 
         dots_x = range(min_x, max_x)
         dots_y = range(min_y, max_y)
-        dots = tuple(itertools.product(dots_x, dots_y))  # TODO TUPLE
+        dots = itertools.product(dots_x, dots_y)
         if not self.blocked_elements:
             return dots
 

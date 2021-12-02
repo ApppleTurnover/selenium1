@@ -40,7 +40,6 @@ class ElementPageLocator:
 
         min_x = math.ceil(rect['x'])
         max_x = min_x + math.floor(rect['width'])
-        print(min_y, max_y)  # TODO REM
         for element in self.blocked_elements:
             rect = element.parent.execute_script(Scripts.get_rect, element)
 
@@ -54,7 +53,6 @@ class ElementPageLocator:
                     min_y += rect['height'] + 1
                 else:
                     max_y -= rect['height'] + 1
-        print(min_y, max_y)  # TODO
         return {
             "min_y": min_y, "max_y": max_y
         }
