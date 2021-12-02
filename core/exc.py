@@ -1,0 +1,1 @@
+class MouseLocationException(Exception): pass
