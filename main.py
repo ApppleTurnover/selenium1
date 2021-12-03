@@ -1,10 +1,12 @@
 import random
 
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 
 from core.action.core import ActionCore
 from core.instruction import PageObject, Pattern
 from core.instruction.pattern import PagePattern, MousePattern, KeyboardPattern
+from core.wait.waiter import WaitElementClick, WaitElementsClick
 
 mouse_view_script = r"""
 function enableCursor() {
@@ -73,6 +75,7 @@ if __name__ == '__main__':
     driver.set_script_timeout(300)
     driver.implicitly_wait(10)
     driver.get("https://material.angular.io/cdk/drag-drop/examples")
+
     driver.execute_script(mouse_view_script)
     block_element = [driver.find_element_by_xpath("//app-component-nav"),
                      driver.find_element_by_xpath("//app-navbar")]
@@ -99,18 +102,39 @@ if __name__ == '__main__':
         ))
     action = ActionCore(page_object=page_object)
     try:
+        element = driver.find_element_by_xpath("//html")
         while True:
             els1 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
-            els2 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[2]//*[@cdkdrag]")
             action.drag_and_drop(
-                drag_element=random.choice(els1),
-                drop_element=random.choice(els2),
-            )
-            els1 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
-            els2 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[2]//*[@cdkdrag]")
-            action.drag_and_drop(
-                drag_element=random.choice(els2),
-                drop_element=random.choice(els1),
+                drag_element=random.choice(
+                    WaitElementsClick(
+                        driver=driver,
+                        delay_wait=10,
+                        locator=(By.XPATH, "//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
+                    )
+                ),
+                drop_element=random.choice(
+                    WaitElementsClick(
+                        driver=driver,
+                        delay_wait=10,
+                        locator=(By.XPATH, "//cdk-drag-drop-connected-sorting-group-example/div/div[2]//*[@cdkdrag]")
+                    )
+                )
+            ).drag_and_drop(
+                drag_element=random.choice(
+                    WaitElementsClick(
+                        driver=driver,
+                        delay_wait=10,
+                        locator=(By.XPATH, "//cdk-drag-drop-connected-sorting-group-example/div/div[2]//*[@cdkdrag]")
+                    )
+                ),
+                drop_element=random.choice(
+                    WaitElementsClick(
+                        driver=driver,
+                        delay_wait=10,
+                        locator=(By.XPATH, "//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
+                    )
+                )
             )
     finally:
         driver.quit()

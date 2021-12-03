@@ -19,3 +19,14 @@ class BaseHandler(ABC):
             time.sleep(self.pattern.delay_after)
 
         return wrapper
+
+    @staticmethod
+    def decorator_element_handler(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            args = tuple(args.wait)
+            time.sleep(self.pattern.delay_before)
+            func(self, *args, **kwargs)
+            time.sleep(self.pattern.delay_after)
+
+        return wrapper
