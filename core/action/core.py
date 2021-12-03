@@ -1,53 +1,64 @@
 import time
 
-from core.action.mouse.handler import MouseHandler
-from core.action.page.handler import PageHandler
-from core.action.keyboard.handler import KeyboardHandler
+from core.action.actions.mouse.handler import MouseHandler
+from core.action.actions.page.handler import PageHandler
+from core.action.actions.keyboard.handler import KeyboardHandler
+from core.instruction import PageObject
 
 
 class ActionCore:
-    def __init__(self, page_object):
+    def __init__(self, page_object: PageObject):
         self.page_object = page_object
 
-        self._mouse_handler = MouseHandler(page_object.driver)
-        self._keyboard_handler = KeyboardHandler(page_object.driver)
-        self._page_handler = PageHandler(page_object.driver)
+        driver, pattern = page_object.driver, page_object.pattern
+
+        self._mouse_handler = MouseHandler(driver, pattern.mouse)
+        self._keyboard_handler = KeyboardHandler(driver, pattern.keyboard)
+        self._page_handler = PageHandler(driver, pattern.page)
 
     def pause(self, delay):
         time.sleep(delay)
         return self
 
-    def scroll_on_element(self, element):
-        self.pause(
-            delay=self.page_object.pattern.scroll.delay_before
-        )._page_handler.scroll_on_element(
+    def scroll_to_element(self, element):
+        self._page_handler.scroll_to_element(
             element=element,
             scrolling_element=self.page_object.scrolling_element,
-            blocked_elements=self.page_object.blocked_elements,
-            scrolling_power_range=self.page_object.pattern.scroll.power_range,
-            scrolling_sleep_range=self.page_object.pattern.scroll.sleep_range
+            blocked_elements=self.page_object.blocked_elements
         )
-        self.pause(self.page_object.pattern.scroll.delay_after)
         return self
 
-    def move_on_element(self, element):
-        self.scroll_on_element(
+    def move_to_element(self, element):
+        self.scroll_to_element(
             element=element
-        ).pause(
-            delay=self.page_object.pattern.mouse.delay_before
-        )._mouse_handler.move_on_element(
+        )._mouse_handler.move_to_element(
             element=element,
-            blocked_elements=self.page_object.blocked_elements,
-            ms=self.page_object.pattern.mouse.speed,
+            blocked_elements=self.page_object.blocked_elements
         )
-        self.pause(self.page_object.pattern.mouse.delay_after)
         return self
 
     def click_on_element(self, element):
-        self.move_on_element(
+        self.move_to_element(
             element=element
-        ).pause(
-            self.page_object.pattern.mouse.delay_before
         )._mouse_handler.click()
-        self.pause(self.page_object.pattern.mouse.delay_after)
+        return self
+
+    def drag(self, element):
+        self.move_to_element(
+            element=element
+        )._mouse_handler.hold()
+        return self
+
+    def drop(self, element):
+        self.move_to_element(
+            element=element
+        )._mouse_handler.release()
+        return self
+
+    def drag_and_drop(self, drag_element, drop_element):
+        self.drag(
+            element=drag_element
+        ).drop(
+            element=drop_element
+        )
         return self

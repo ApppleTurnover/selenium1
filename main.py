@@ -1,21 +1,10 @@
 import random
-import time
-from dataclasses import dataclass
 
 from selenium import webdriver
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver import Keys
-from selenium.webdriver.common.action_chains import ActionBuilder
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 from core.action.core import ActionCore
-from core.action.keyboard.action import KeyboardAction
-from core.action.keyboard.handler import KeyboardHandler
-from core.action.mouse.handler import MouseHandler
-from core.action.mouse.locator import ElementMouseLocator
-from core.action.page.handler import PageHandler
-from core.action.page.locator import ElementPageLocator
+from core.instruction import PageObject, Pattern
+from core.instruction.pattern import PagePattern, MousePattern, KeyboardPattern
 
 mouse_view_script = r"""
 function enableCursor() {
@@ -40,7 +29,6 @@ function enableCursor() {
 };
 enableCursor();
 """
-
 
 # def tjournal():
 #     driver.find_element_by_css_selector(".propaganda[data-id='1']")
@@ -80,51 +68,49 @@ enableCursor();
 #         time.sleep(5)
 
 
-class Mouse:
-    speed = 100
-    delay_before = 0.5
-    delay_after = 0.5
-
-
-class Keyboard:
-    pass
-
-
-class Scroll:
-    delay_before = 0.5
-    delay_after = 0.5
-    power_range = [50, 1500]
-    sleep_range = [100, 1000]
-
-
-class Pattern:
-    mouse = Mouse()
-    keyboard = Keyboard()
-    scroll = Scroll()
-
-
-@dataclass
-class PageObject:
-    driver: webdriver.Remote
-    scrolling_element: WebElement
-    blocked_elements: list[WebElement]
-    pattern = Pattern()
-
-
 if __name__ == '__main__':
     driver = webdriver.Firefox()
     driver.set_script_timeout(300)
     driver.implicitly_wait(10)
-    driver.get(
-        "https://www.google.com/search?q=google+news&source=lmns&tbm=nws&bih=882&biw=1745&hl=ru&sa=X&ved=2ahUKEwjl8Y-5wcL0AhWGuCoKHaHFBJcQ_AUoAXoECAEQAQ")
-    driver.find_element_by_xpath("(//button)[2]").click()
+    driver.get("https://material.angular.io/cdk/drag-drop/examples")
     driver.execute_script(mouse_view_script)
-    block_element = [driver.find_element_by_xpath("//body/div/div/form")]
-    scrolling_element = driver.find_element_by_xpath("//html")
-    action = ActionCore(page_object=PageObject(driver, scrolling_element, block_element))
+    block_element = [driver.find_element_by_xpath("//app-component-nav"),
+                     driver.find_element_by_xpath("//app-navbar")]
+    scrolling_element = driver.find_element_by_xpath("//mat-sidenav-content")
+    page_object = PageObject(
+        driver, scrolling_element, block_element,
+        pattern=Pattern(
+            mouse=MousePattern(
+                speed=(0.1, 0.5),
+                delay_before=(0.1, 0.5),
+                delay_after=(0.3, 0.5)
+            ),
+            keyboard=KeyboardPattern(
+                delay_before=(0.1, 0.5),
+                delay_after=(0.3, 0.5),
+                delay_send=(0.05, 0.3),
+                delay_send_mistakes=(0.05, 0.1),
+                change_mistakes=(0.05, 0.1)
+            ),
+            page=PagePattern(
+                delay_before=(0.1, 0.5),
+                delay_after=(0.3, 0.5),
+            )
+        ))
+    action = ActionCore(page_object=page_object)
     try:
         while True:
-            element = random.choice(driver.find_elements_by_xpath("//g-card/div/div/a"))
-            action.move_on_element(element)
+            els1 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
+            els2 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[2]//*[@cdkdrag]")
+            action.drag_and_drop(
+                drag_element=random.choice(els1),
+                drop_element=random.choice(els2),
+            )
+            els1 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
+            els2 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[2]//*[@cdkdrag]")
+            action.drag_and_drop(
+                drag_element=random.choice(els2),
+                drop_element=random.choice(els1),
+            )
     finally:
         driver.quit()
