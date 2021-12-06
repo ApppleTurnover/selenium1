@@ -57,7 +57,7 @@ class ElementMouseLocator:
         dots_y = range(min_y, max_y)
         dots = itertools.product(dots_x, dots_y)
         if not self.blocked_elements:
-            return dots
+            return tuple(dots)
 
         get_rect = lambda el: el.parent.execute_script(Scripts.get_rect, el)
         blocked_rects = tuple(map(get_rect, self.blocked_elements))

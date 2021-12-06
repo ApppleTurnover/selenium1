@@ -1,13 +1,14 @@
 import time
 
+from selenium.webdriver.common.keys import Keys
+
 from core.action.actions.mouse.handler import MouseHandler
 from core.action.actions.page.handler import PageHandler
 from core.action.actions.keyboard.handler import KeyboardHandler
-from core.instruction import PageObject
 
 
 class ActionCore:
-    def __init__(self, page_object: PageObject):
+    def __init__(self, page_object):
         self.page_object = page_object
 
         driver, pattern = page_object.driver, page_object.pattern
@@ -62,3 +63,19 @@ class ActionCore:
             element=drop_element
         )
         return self
+
+    def write_text_to_element(self, element, text):
+        self.move_to_element(
+            element=element
+        )._keyboard_handler.send_text(
+            text=text
+        )
+        return self
+
+    def send_text_to_element(self, element, text):
+        self.write_text_to_element(
+            element=element,
+            text=text
+        )._keyboard_handler.send_text(
+            Keys.ENTER
+        )

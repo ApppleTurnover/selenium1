@@ -1,12 +1,17 @@
 import random
+import time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 from core.action.core import ActionCore
-from core.instruction import PageObject, Pattern
+from core.instruction import Pattern
 from core.instruction.pattern import PagePattern, MousePattern, KeyboardPattern
+from core.page.page_object import *
+from core.page.page_object import Page
 from core.wait.waiter import WaitElementClick, WaitElementsClick
+from sites.google import Google, GoogleSearch
+from sites.google.google_search.locator import GoogleSearchLocator
 
 mouse_view_script = r"""
 function enableCursor() {
@@ -74,67 +79,34 @@ if __name__ == '__main__':
     driver = webdriver.Firefox()
     driver.set_script_timeout(300)
     driver.implicitly_wait(10)
-    driver.get("https://material.angular.io/cdk/drag-drop/examples")
+    core_pattern = Pattern(
+        mouse=MousePattern(
+            speed=(0.1, 0.5),
+            delay_before=(0.1, 0.5),
+            delay_after=(0.3, 0.5)
+        ),
+        keyboard=KeyboardPattern(
+            delay_before=(0.1, 0.5),
+            delay_after=(0.3, 0.5),
+            delay_send=(0.05, 0.3),
+            delay_send_mistakes=(0.05, 0.1),
+            change_mistakes=(0.05, 0.1)
+        ),
+        page=PagePattern(
+            delay_before=(0.1, 0.5),
+            delay_after=(0.3, 0.5),
+        )
+    )
 
-    driver.execute_script(mouse_view_script)
-    block_element = [driver.find_element_by_xpath("//app-component-nav"),
-                     driver.find_element_by_xpath("//app-navbar")]
-    scrolling_element = driver.find_element_by_xpath("//mat-sidenav-content")
-    page_object = PageObject(
-        driver, scrolling_element, block_element,
-        pattern=Pattern(
-            mouse=MousePattern(
-                speed=(0.1, 0.5),
-                delay_before=(0.1, 0.5),
-                delay_after=(0.3, 0.5)
-            ),
-            keyboard=KeyboardPattern(
-                delay_before=(0.1, 0.5),
-                delay_after=(0.3, 0.5),
-                delay_send=(0.05, 0.3),
-                delay_send_mistakes=(0.05, 0.1),
-                change_mistakes=(0.05, 0.1)
-            ),
-            page=PagePattern(
-                delay_before=(0.1, 0.5),
-                delay_after=(0.3, 0.5),
-            )
-        ))
-    action = ActionCore(page_object=page_object)
+    google = Google(
+        driver=driver,
+        pattern=core_pattern
+    ).get().cookie_accept()
+
     try:
-        element = driver.find_element_by_xpath("//html")
         while True:
-            els1 = driver.find_elements_by_xpath("//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
-            action.drag_and_drop(
-                drag_element=random.choice(
-                    WaitElementsClick(
-                        driver=driver,
-                        delay_wait=10,
-                        locator=(By.XPATH, "//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
-                    )
-                ),
-                drop_element=random.choice(
-                    WaitElementsClick(
-                        driver=driver,
-                        delay_wait=10,
-                        locator=(By.XPATH, "//cdk-drag-drop-connected-sorting-group-example/div/div[2]//*[@cdkdrag]")
-                    )
-                )
-            ).drag_and_drop(
-                drag_element=random.choice(
-                    WaitElementsClick(
-                        driver=driver,
-                        delay_wait=10,
-                        locator=(By.XPATH, "//cdk-drag-drop-connected-sorting-group-example/div/div[2]//*[@cdkdrag]")
-                    )
-                ),
-                drop_element=random.choice(
-                    WaitElementsClick(
-                        driver=driver,
-                        delay_wait=10,
-                        locator=(By.XPATH, "//cdk-drag-drop-connected-sorting-group-example/div/div[1]//*[@cdkdrag]")
-                    )
-                )
-            )
+            google.new_tab().get()
+            page = random.choice(page for page, urls in Page.pages.items() if driver.current_url in urls)
+            # page.
     finally:
         driver.quit()
